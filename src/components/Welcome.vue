@@ -7,7 +7,7 @@
       <el-menu 
       :router='true'
       default-active="2" class="el-menu-admin" :collapse="isCollapse" @open="handleOpen" @close="handleClose" background-color="#545c64" text-color="#fff" active-text-color="#ffd04b">
-        <el-submenu :index="item.path" v-for="item in menulist" :key="item.id">
+        <el-submenu :index="item.path" v-for="item in this.$store.state.menus" :key="item.id">
           <template slot="title">
             <i class="el-icon-location"></i>
             <span>{{item.authName}}</span>
@@ -66,17 +66,18 @@ export default {
     logout() {
 
     },
-    menus(){
-      fetch_menus().then(res=>{
-        this.menulist = res.data.data
-        console.log(this.menulist)
-      })
-    }
+    // menus(){
+    //   console.log(2)
+    //   fetch_menus().then(res=>{
+    //     this.menulist = res.data.data
+    //     console.log(this.menulist)
+    //   })
+    // }
   },
 
   created() {
     console.log('home组件被渲染....')
-    this.menus()
+    // this.menus()
   }
 }
 </script>

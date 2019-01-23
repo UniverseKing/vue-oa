@@ -1,21 +1,85 @@
-# vue-oa
+1. 登录
 
-> A Vue.js project
+> 使用axios拦截器完成了请求头的设置，解决了每个API都需要设置请求头才能正常发送的问题
 
-## Build Setup
+2. 动态菜单
 
-``` bash
-# install dependencies
-npm install
+> 根据不同用户的权限获取不同的菜单列表,通过v-for动态渲染
 
-# serve with hot reload at localhost:8080
-npm run dev
+3. 动态路由
 
-# build for production with minification
-npm run build
+> 动态路由解决的问题: 防止用户在浏览器地址栏输入无权访问的路由规则也能显示组件界面
 
-# build for production and view the bundle analyzer report
-npm run build --report
+> 根据不同用户的权限获取不同的菜单列表,再根据不同的菜单列表组装出不同的路由规则
+> 约定: 
+> 1. 前端的组件名称应该和后端返回的path保持一致
+> 2. 使用路由懒加载获取对应的组件
+> 3. 利用router.addRoutes将组装好的路由规则添加进入router中
+
+4. 优化:获取菜单的请求在项目中只需要调用一次,后期刷新界面也不需要调用
+
+> vuex存放公共数据时,如果公共数据的来源是接口请求,那么这个请求应该放到actions中进行调用
+
+> 4.1 登录成功之后调用获取菜单的请求(action)
+> 4.2 菜单数据存放到vuex中(共享数据、访问速度会快一些)
+> 4.3 将数据持久化存储(刷新界面也不会丢失数据)
+
+
+5. 路由规则的持久化(目前还做不到)
+
+> 5.1 路由规则的组装获取需要放到getters中进行
+> 5.2 使用路由规则时从getters中获取
+> 5.3 考虑路由规则是否可以持久化存储?
+
+
+6. 路由全局守卫实现路由拦截跳转
+```js
+// 路由全局守卫实现拦截
+router.beforeEach(function(to,from,next){
+  // to表示要去的路由
+  // from表示要离开的路由
+  // next本质是一个函数,就是守卫,通过调用next才能让当前函数继续向后执行
+  const token = localStorage.getItem('token')
+  // 判断用户是否登录,如果登录了就放行
+  if(token){
+    next()
+  }else{
+    if(to.path === '/login'){
+      next()
+    }else{
+      next('/login')
+    }
+  }
+})
 ```
 
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+---
+
+
+> 后台管理系统一般只用**路由全局守卫**
+> 商城类项目一般只用**路由独享守卫**
+
+> 在购物商场类项目中,有一些界面是公共的(首页、分类列表、商品详情),即使没有登录也可以浏览
+> 有一些界面必须要求用户登录才能浏览(个人中心、购物车、我的订单)
+> 可以使用 **路由独享守卫** 拦截需要拦截的路由
+
+```js
+rules:[
+  {
+    path:'/home',
+    component:home
+  },
+  {
+    path:'/car',
+    component:car,
+    beforeEnter:function(to,form,next){
+      // 当访问到 /car这个路由规则时会被拦截   
+      // 判断用户是否登录,如果登录直接调用next放行
+      // 如果没有登录跳转到登录界面
+    }
+  }
+]
+```
+
+> this.$router 代表的是当前项目中的router实例
+> this.$route 代表的是routes数组中的每一个路由规则对象

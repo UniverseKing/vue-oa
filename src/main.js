@@ -13,10 +13,13 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 Vue.use(ElementUI)
 
+// 集成状态管理store
+import store from '@/store'
 
 new Vue({
   el: '#app',
   router,
+  store, // 将store实例挂载到vue实例上面
   components: { App },
   template: '<App/>'
 })

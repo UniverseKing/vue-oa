@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import {fetch_menus} from '@/api'
+import store from '@/store'
 
 // 登录
 import Login from '@/components/Login'
@@ -24,7 +25,14 @@ const router = new Router({
         //   component:Users
         // }
       ]
-    }
+    },
+    // {
+    //   path:'/car',
+    //   component:'',
+    //   beforeEnter:function(to,form,next){
+
+    //   }
+    // }
   ]
 })
 
@@ -40,8 +48,9 @@ const router = new Router({
 
 
 // 1. 获取到用户对应的权限菜单
-
+/*
 fetch_menus().then(res=>{
+  console.log(1)
   // console.log(res.data.data)
   res.data.data.forEach(v=>{
     // console.log(v)
@@ -63,12 +72,49 @@ fetch_menus().then(res=>{
   router.addRoutes(router.options.routes)
   console.log(router)
 })
+*/
+
+// const routerList = JSON.parse(localStorage.getItem('routes')) || []
+
+// // 如果本地存储中存在路由规则数组就不需要重新调用getters
+// if(routerList.length > 0){
+//   console.log(123)
+//   router.options.routes[1].children = router.options.routes[1].children.concat(routerList)
+// }else{
+//   router.options.routes[1].children = router.options.routes[1].children.concat(store.getters.menuRoutes)
+// }
+// router.addRoutes(router.options.routes)
+
+router.options.routes[1].children = router.options.routes[1].children.concat(store.getters.menuRoutes)
+router.addRoutes(router.options.routes)
+
+
 // 2. 遍历权限菜单,根据有几个菜单项创建几个路由规则对象
 // 2.1 双重for循环进行遍历
 // 2.2 需要组装路由规则对象,需要用到路由懒加载 {path:'',component:}
 // 3. 将创建好的路由规则对象添加到router.options.routes[1].children
 // 4. 调用router.addRoutes(router.options.routes)将所有路由规则动态添加完毕
 
+
+
+// 路由全局守卫实现拦截
+router.beforeEach(function(to,from,next){
+  // to表示要去的路由
+  // from表示要离开的路由
+  // next本质是一个函数,就是守卫,通过调用next才能让当前函数继续向后执行
+
+  const token = localStorage.getItem('token')
+  // 判断用户是否登录,如果登录了就放行
+  if(token){
+    next()
+  }else{
+    if(to.path === '/login'){
+      next()
+    }else{
+      next('/login')
+    }
+  }
+})
 
 export default router
 
